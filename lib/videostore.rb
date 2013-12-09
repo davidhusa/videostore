@@ -30,8 +30,8 @@ module VideoStore
 
     establish_connection
 
-    # puts @youtube.inspect
-  end
+  
+  end # end of youtube class
 end
   
   #puts VideoStore::Youtube.connection.inspect
