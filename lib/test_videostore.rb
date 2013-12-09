@@ -5,7 +5,7 @@
 # - Various sorting options
 require "#{File.dirname(__FILE__)}/videostore"
 
-describe Video do
+describe VideoStore::Video do
   before :each do
   end
   
