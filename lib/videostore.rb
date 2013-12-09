@@ -20,18 +20,20 @@ module VideoStore
                                         application_name: YOUTUBE_API_SERVICE_NAME,
                                         application_version: YOUTUBE_API_VERSION, 
                                         authorization: nil)
-        @youtube = @client.discovered_api(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION)
+        @connection = @client.discovered_api(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION)
       end
-
       def connection
-        @youtube
+        @connection
       end
-    end
-
+    end # end of class methods
     establish_connection
 
-  
-  end # end of youtube class
+    attr_accessor :uri
+
+
+
+
+  end # end of Youtube class
 end
   
   #puts VideoStore::Youtube.connection.inspect

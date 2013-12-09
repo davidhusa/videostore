@@ -8,7 +8,8 @@ Gem::Specification.new do |s|
                   "such as Vimeo and Youtube."
   s.authors     = ['David Husa']
   s.email       = 'davidhusa@gmail.com'
-  s.files       = ['lib/videostore.rb']
+  s.files       = ['lib/videostore.rb', 'spec/videostore_spec.rb',
+                   'rakefile', 'README.md']
   s.homepage    = 'http://davidhusa.com'
   s.license     = 'MIT'
 end
