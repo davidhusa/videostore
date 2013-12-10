@@ -1,16 +1,23 @@
 require 'faraday'
 require 'google/api_client'
 require 'vimeo'
-
+load 'keys.rb' ## store your youtube API key here as the constant YOUTUBE_DEVELOPER_KEY
 
 module VideoStore
   class Video
-    class << self
+    attr_accessor :video_id
+    attr_reader :title, :thumbnail_uri, :channel_name, :views, 
+                :likes, :comment_count, :duration
+    ATTRIBUTES = :video_id, :title, :thumbnail_uri, :channel_name, :views,
+                 :likes, :comment_count, :duration
+
+    def initialize
+      raise NoMethodError
     end
   end
 
   class Youtube < Video
-    DEVELOPER_KEY = "AIzaSyAvAE2p-TTo1b4oSRCg4qzR5sE8o8c_8J8"
+    DEVELOPER_KEY = ::YOUTUBE_DEVELOPER_KEY
     YOUTUBE_API_SERVICE_NAME = "youtube"
     YOUTUBE_API_VERSION = "v3"
 
@@ -25,58 +32,150 @@ module VideoStore
       def connection
         @connection
       end
+      def client
+        @client
+      end 
     end # end of class methods
     establish_connection
 
-    attr_accessor :uri
+    def initialize(video_id)
+      @video_id = video_id
+      @response_hash = Hash.new
+      populate_attributes
+    end
 
+    def connection
+      self.class.connection
+    end
+    def client
+      self.class.client
+    end 
 
+    def present?(options = {})
+      JSON.parse(fetch_data('id').response.body)["pageInfo"]["totalResults"] == 1
+    end
+  
+    def populate_attributes(options = {})
+      if present?
+        content_details = JSON.parse(fetch_data('contentDetails').response.body)['items'].first['contentDetails']
+        @duration = content_details["duration"].youtube_duration_to_seconds
 
+        statistics = JSON.parse(fetch_data('statistics').response.body)['items'].first['statistics']
+        @views = statistics["viewCount"].to_i
+        @likes = statistics["likeCount"].to_i
+        @comment_count = statistics["commentCount"].to_i
+
+        snippet = JSON.parse(fetch_data('snippet').response.body)['items'].first['snippet']
+        @title = snippet["title"]
+        @thumbnail_uri = snippet["thumbnails"]["default"]["url"]
+        @channel_name = snippet["channelTitle"]
+      end
+      info
+    end
+
+    def uri
+      "http://www.youtube.com/watch?v=#{@video_id}" if present?
+    end
+
+    def info
+      response = {}
+      if present?
+        ATTRIBUTES.each do |attribute|
+          response.merge!({attribute => send(attribute)})
+        end
+      else
+        response.merge!({:video_id => @video_id})
+        response.merge!({:video_not_found => 'video_not_found'})
+      end 
+      response
+    end
+
+    def youtube? ; true ; end
+    def vimeo? ; false ; end
+
+    private
+
+    def fetch_data(part, options = {})
+      if options[:use_cache] && @response_hash[part]
+        @response_hash[part]
+      else
+        @response_hash[part] = client.execute!(
+          :api_method => connection.videos.list,
+          :parameters => {
+            :id => @video_id,
+            :part => part,
+          }
+        )
+      end
+    end
 
   end # end of Youtube class
+
+  class Vimeo < Video
+    def initialize(video_id) 
+      @video_id = video_id
+      populate_attributes
+    end
+
+    def present?
+      ::Vimeo::Simple::Video.info(@video_id
+        ).parsed_response.class == Array
+    end
+
+    def uri
+      "http:://vimeo.com/#{@video_id}"
+    end
+
+    def populate_attributes
+      if present?
+        fetch_data
+
+        @title =  @response['title']
+        @thumbnail_uri =  @response['thumbnail_large']
+        @channel_name =  @response['user_name']
+        @views =  @response['stats_number_of_plays']
+        @likes =  @response['stats_number_of_likes']
+        @comment_count =  @response['stats_number_of_comments']
+        @duration =  @response['duration']
+      end
+    end
+
+    def info
+      response = {}
+      if present?
+        ATTRIBUTES.each do |attribute|
+          response.merge!({attribute => send(attribute)})
+        end
+      else
+        response.merge!({:video_id => @video_id})
+        response.merge!({:video_not_found => 'video_not_found'})
+      end 
+      response
+    end
+
+    def youtube? ; false ; end
+    def vimeo? ; true ; end
+
+    private
+
+    def fetch_data
+      @response = JSON.parse(
+        ::Vimeo::Simple::Video.info(@video_id).response.body
+      ).first
+    end
+  end
 end
-  
-  #puts VideoStore::Youtube.connection.inspect
-  user_info = Vimeo::Simple::User.info("matthooks")
-  puts user_info
 
+class String
+  def youtube_duration_to_seconds
+    hours =   match(/(\d+)H/)
+    minutes = match(/(\d+)M/)
+    seconds = match(/(\d+)S/)
 
-# client = Google::APIClient.new
-# puts client.inspect
-#plus = client.d
+    hours = hours     ? hours[1].to_i   : 0
+    minutes = minutes ? minutes[1].to_i : 0
+    seconds = seconds ? seconds[1].to_i : 0
 
-
- # # Initialize the client & Google+ API
- #    require 'google/api_client'
- #    client = Google::APIClient.new
- #    plus = client.discovered_api('plus')
-
- #    # Initialize OAuth 2.0 client    
- #    client.authorization.client_id = '<CLIENT_ID_FROM_API_CONSOLE>'
- #    client.authorization.client_secret = '<CLIENT_SECRET>'
- #    client.authorization.redirect_uri = '<YOUR_REDIRECT_URI>'
-    
- #    client.authorization.scope = 'https://www.googleapis.com/auth/plus.me'
-
- #    # Request authorization
- #    redirect_uri = client.authorization.authorization_uri
-
- #    # Wait for authorization code then exchange for token
- #    client.authorization.code = '....'
- #    client.authorization.fetch_access_token!
-
- #    # Make an API call
- #    result = client.execute(
- #      :api_method => plus.activities.list,
- #      :parameters => {'collection' => 'public', 'userId' => 'me'}
- #    )
- #    puts result.data
-
-#  conn = Faraday.new(:url => 'http://youtube.com') do |faraday|
-#   faraday.request  :url_encoded             # form-encode POST params
-#   faraday.response :logger                  # log requests to STDOUT
-#   faraday.adapter  Faraday.default_adapter  # make requests with Net::HTTP
-# end
-
-# response = conn.get '/watch?v=7cIES6Nggs'  # returns 301 to blank page
-# puts response.body 
+    (hours * 3600) + (minutes * 60) + seconds
+  end
+end
