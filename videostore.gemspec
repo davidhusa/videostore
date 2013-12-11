@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'videostore'
-  s.version     = '0.0.2'
+  s.version     = '0.0.3'
   s.date        = '2013-12-01'
   s.summary     = 'Utility for storing/tracking remote videos'
   s.description = "The videostore gem is a utility for storing " << 
