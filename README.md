@@ -9,11 +9,10 @@ Features:
 - Methods for bringing down up-to-date data from API #
 - Various sorting options made possible through duck typing
 
-To start using the gem have a file to the lib directory called keys.rb that defines 
-YOUTUBE_DEVELOPER_KEY as your google developer key with access to the V3 Youtube API.
+To start using the gem have a file to the lib directory called keys.rb that defines YOUTUBE_DEVELOPER_KEY as your google developer key (must have access to the V3 Youtube API).
 
 Instantiate a new Youtube video with
-> VideoStore::Youtube.new(<insert youtube ID here>)
+> VideoStore::Youtube.new(insert youtube ID here)
 
 Do the same with Vimeo, but replace Youtube with Vimeo!!
 
