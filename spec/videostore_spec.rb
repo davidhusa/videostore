@@ -35,7 +35,6 @@ describe VideoStore::Youtube do
 
     it "can pull down information" do
       @vimeo.video_id.should == 39605750
-      puts @vimeo.info
       @vimeo.title.should == "woot woot"
       @vimeo.thumbnail_uri.should == "http://b.vimeocdn.com/ts/273/226/273226915_640.jpg"
       @vimeo.channel_name.should == "Cole Ruffing"

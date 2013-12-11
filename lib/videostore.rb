@@ -1,7 +1,12 @@
 require 'faraday'
 require 'google/api_client'
 require 'vimeo'
-load 'keys.rb' ## store your youtube API key here as the constant YOUTUBE_DEVELOPER_KEY
+begin
+  load 'keys.rb' ## store your youtube API key here as the constant YOUTUBE_DEVELOPER_KEY
+rescue LoadError
+  raise "To start using the gem have a file to the lib directory called keys.rb " << 
+        "that defines YOUTUBE_DEVELOPER_KEY as your google developer key (must have access to the V3 Youtube API)."
+end
 
 module VideoStore
   class Video
