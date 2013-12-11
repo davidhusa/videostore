@@ -29,3 +29,4 @@ comment_count -- # of comments
 duration      -- length of the video in seconds
 
 This duck typing allows you to sort both kinds of videos in the same collection.
+E.G. [a bunch of vimeos and youtubes].sort_by(&:views).reverse # this would sort the collection by most views
