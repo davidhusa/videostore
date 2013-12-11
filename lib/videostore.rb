@@ -19,6 +19,13 @@ module VideoStore
     def initialize
       raise NoMethodError
     end
+
+    def inspect
+      info
+    end
+    def info
+      {}
+    end
   end
 
   class Youtube < Video
